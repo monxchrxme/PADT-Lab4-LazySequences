@@ -4,14 +4,14 @@
 #include <stdexcept>
 
 template <typename T>
-class WriteOnlyStream {
+class SequenceWriteStream : public IWriteOnlyStream<T> {
 private:
     MutableArraySequence<T>* destination;
     size_t position = 0;
     bool is_open = false;
 
 public:
-    explicit WriteOnlyStream(MutableArraySequence<T>* dest) : destination(dest) {}
+    explicit SequenceWriteStream(MutableArraySequence<T>* dest) : destination(dest) {}
 
     void open() {
         is_open = true;

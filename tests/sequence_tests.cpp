@@ -286,3 +286,48 @@ TEST(LazyInfrastructureTest, EnumeratorIteratesCorrectly) {
     EXPECT_TRUE(enumerator->move_next());
     EXPECT_EQ(enumerator->get_current(), 0);
 }
+
+// Функция для теста reduce
+int SumReducer(const int& acc, const int& val) {
+    return acc + val;
+}
+
+TEST(LazySequenceEdgeCases, ReduceWorksOnFiniteSequence) {
+    LazyContext ctx;
+    auto* gen = ctx.Allocate<FunctionGenerator<int>>(SequentialRule, Cardinal(4)); // 0, 1, 2, 3
+    auto* seq = ctx.Allocate<LazySequence<int>>(gen, &ctx);
+
+    // 0 + 1 + 2 + 3 = 6
+    int sum = seq->reduce(SumReducer, 0);
+    EXPECT_EQ(sum, 6);
+}
+
+TEST(LazySequenceEdgeCases, OutOfBoundsAccessThrows) {
+    LazyContext ctx;
+    auto* gen = ctx.Allocate<FunctionGenerator<int>>(SequentialRule, Cardinal(2)); // 0, 1
+    auto* seq = ctx.Allocate<LazySequence<int>>(gen, &ctx);
+
+    EXPECT_THROW(seq->get(-1), std::out_of_range); // Отрицательный индекс
+    EXPECT_THROW(seq->get(5), std::out_of_range);  // Выход за пределы конечного списка
+    EXPECT_THROW(seq->get_first(), std::out_of_range); // Работает, но если создать empty, то кинет
+    
+    auto* empty_seq = seq->create_empty();
+    EXPECT_THROW(empty_seq->get_first(), std::out_of_range);
+    EXPECT_THROW(empty_seq->get_last(), std::out_of_range);
+}
+
+// Правила для цепочки фильтров
+bool IsEven(const int& v) { return v % 2 == 0; }
+bool GreaterThanTen(const int& v) { return v > 10; }
+
+TEST(LazySequenceEdgeCases, ChainedFiltersWork) {
+    LazyContext ctx;
+    auto* gen = ctx.Allocate<FunctionGenerator<int>>(SequentialRule); // 0, 1, 2, 3...
+    auto* seq = ctx.Allocate<LazySequence<int>>(gen, &ctx);
+
+    Sequence<int>* filtered = seq->where(IsEven)->where(GreaterThanTen);
+
+    EXPECT_EQ(filtered->get(0), 12);
+    EXPECT_EQ(filtered->get(1), 14);
+    EXPECT_EQ(filtered->get(2), 16);
+}
