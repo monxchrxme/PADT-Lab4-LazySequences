@@ -1,6 +1,7 @@
-#include <iostream>
+#include "ui.hpp"
 
 int main() {
-    std::cout << "Lab 4: LazeSequence" << std::endl;
+    AppUI app;
+    app.Run();
     return 0;
 }
