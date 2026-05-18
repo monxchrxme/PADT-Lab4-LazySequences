@@ -309,7 +309,6 @@ TEST(LazySequenceEdgeCases, OutOfBoundsAccessThrows) {
 
     EXPECT_THROW(seq->get(-1), std::out_of_range); // Отрицательный индекс
     EXPECT_THROW(seq->get(5), std::out_of_range);  // Выход за пределы конечного списка
-    EXPECT_THROW(seq->get_first(), std::out_of_range); // Работает, но если создать empty, то кинет
     
     auto* empty_seq = seq->create_empty();
     EXPECT_THROW(empty_seq->get_first(), std::out_of_range);
