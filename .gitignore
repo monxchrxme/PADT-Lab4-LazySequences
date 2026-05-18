@@ -1,0 +1,49 @@
+# Build
+build/
+.cache/
+.changd
+cmake-build-*/
+_deps/
+
+# C++ Compiled artifacts
+*.d
+*.o
+*.obj
+*.slo
+*.lo
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Static / dynamic libraries
+*.a
+*.la
+*.lai
+*.lib
+*.so
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug symbols (macOS)
+*.dSYM/
+
+# Clion
+.idea/
+cmake-build-debug/
+cmake-build-release/
+*.iml
+
+# VSCode
+.vscode/
+
+# mac
+.DS_Store
+
+# im gui temp 
+imgui.ini
