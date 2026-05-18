@@ -156,6 +156,28 @@ public:
         return left_part->concat(single_seq)->concat(right_part);
     }
 
+    Sequence<T>* insert_after_materialized(const T& item) {
+        // Узнаем, сколько элементов сейчас реально вычислено
+        int k = this->get_materialized_count();
+        
+        // Вставляем элемент ровно на эту границу
+        return this->insert_at(item, k);
+    }
+
+    Sequence<T>* insert_and_restart(const T& item) {
+        int k = this->get_materialized_count();
+        
+        // Берем только то, что уже было вычислено
+        auto* materialized_part = this->slice(0, k);
+        
+        // Вставляемый элемент
+        auto* single_gen = context->Allocate<SingleItemGenerator<T>>(item);
+        auto* single_seq = context->Allocate<LazySequence<T>>(single_gen, context);
+        
+        // Склеиваем: вычисленное + элемент + весь текущий список
+        return materialized_part->concat(single_seq)->concat(const_cast<LazySequence<T>*>(this));
+    }
+
     Sequence<T>* remove_at(int index) override {
         // Склеиваем кусок ДО индекса и кусок ПОСЛЕ индекса
         // Кусок ДО удаляемого элемента

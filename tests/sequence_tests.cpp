@@ -329,4 +329,42 @@ TEST(LazySequenceEdgeCases, ChainedFiltersWork) {
     EXPECT_EQ(filtered->get(0), 12);
     EXPECT_EQ(filtered->get(1), 14);
     EXPECT_EQ(filtered->get(2), 16);
+}   
+
+TEST(LazyOperationsTest, InsertAfterMaterialized) {
+    LazyContext ctx;
+    auto* gen = ctx.Allocate<FunctionGenerator<int>>(SequentialRule); // 0, 1, 2, 3, 4...
+    auto* seq = ctx.Allocate<LazySequence<int>>(gen, &ctx);
+
+    // Читаем первые 3 элемента (индексы 0, 1, 2). Кэш = 3
+    EXPECT_EQ(seq->get(2), 2); 
+    EXPECT_EQ(seq->get_materialized_count(), 3);
+
+    // Вставляем 99 сразу после вычисленных
+    Sequence<int>* modified = seq->insert_after_materialized(99);
+
+    // Ожидаем: 0, 1, 2, 99, 3, 4, 5...
+    EXPECT_EQ(modified->get(0), 0);
+    EXPECT_EQ(modified->get(2), 2);
+    EXPECT_EQ(modified->get(3), 99); // Наш вставленный элемент
+    EXPECT_EQ(modified->get(4), 3);  // Исходный список продолжился
+}
+
+TEST(LazyOperationsTest, InsertAndRestart) {
+    LazyContext ctx;
+    auto* gen = ctx.Allocate<FunctionGenerator<int>>(SequentialRule); // 0, 1, 2, 3, 4...
+    auto* seq = ctx.Allocate<LazySequence<int>>(gen, &ctx);
+
+    // Читаем первые 2 элемента (индексы 0, 1). Кэш = 2
+    EXPECT_EQ(seq->get(1), 1); 
+
+    // Вставляем 99 и начинаем заново
+    Sequence<int>* modified = seq->insert_and_restart(99);
+
+    // Ожидаем: [0, 1] + [99] + [0, 1, 2, 3...]
+    EXPECT_EQ(modified->get(0), 0);
+    EXPECT_EQ(modified->get(1), 1);
+    EXPECT_EQ(modified->get(2), 99); // Вставленный элемент
+    EXPECT_EQ(modified->get(3), 0);  // Список начался заново
+    EXPECT_EQ(modified->get(4), 1);
 }
