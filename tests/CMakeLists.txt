@@ -8,7 +8,7 @@ endmacro()
 add_module_test(tests_lazy "cardinal_tests.cpp;context_tests.cpp;sequence_tests.cpp" lazy_lib)
 
 # ТЕСТЫ ПОТОКОВ
-add_module_test(tests_streams "streams_tests.cpp" streams_lib)
+add_module_test(tests_streams "streams_tests.cpp" "streams_lib;lazy_lib")
 
 # ТЕСТЫ АВТОМАТА
 add_module_test(tests_fsm "fsm_tests.cpp" fsm_lib)
